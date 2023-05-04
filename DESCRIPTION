@@ -8,7 +8,7 @@ Depends: R (>=3.5.0)
 Imports: tidyverse, dplyr, msigdbr, qusage, UCSCXenaTools, igraph, graphics
 Suggests: ggplot2, tibble, tidyr, readr, purrr, stringr, forcats, lubridate, limma
 Description: GSAdapt is an exploratory package able to identify driver genes in a published or in-house gene sets. GSAdapt take into account the transcriptomic expression of each gene and generate a correlation matrix for creating graph models. These models help users to focus on those genes with more coexpression and favour their use in other Bioconductor analysis such as pathway enrichment analysis or survival analysis.
-License:
+License: GPL-2
 VignetteBuilder:
 URL: https://github.com/SergioBarace/GSAdapt
 BugReports: https://github.com/SergioBarace/GSAdapt/issues
