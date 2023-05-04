@@ -1,0 +1,34 @@
+.Signature_gsea<-function(option=list(NULL,"all"), 
+                         specie=list("Homo sapiens","Mus musculus",specie), 
+                         category=list(NULL,"H","C1","C2","C3","C4","C5","C6","C7"),
+                         subcategory=list(NULL,"CGP","CP","CP:BIOCARTA","CP:KEGG","CP:PID",
+                                          "CP:REACTOME","CP:WIKIPATHWAYS","MIR:MIRDB","MIR:MIR_Legacy",
+                                          "TFT:GTRD","TFT:TFT_Legacy","CGN","CM","GO:BP","GO:CC",
+                                          "GO:MF","HPO","IMMUNESIGDB","VAX"),
+                        name=name){
+  
+  # option: return all available signatures
+  
+  # options specie: "Homo sapiens", "Mus musculus"
+  # other options in msigdbr_species()
+  
+  # options category: H (Hallmark), C2 (curated pathways), C5 (Gene Ontology)
+  # other options in msigdbr_collections()
+  
+  # name: name of the signature
+  
+  require(msigdbr)
+  require(dplyr)
+  require(tidyverse)
+  
+  if(is.null(option)==F){
+    Signature <- msigdbr::msigdbr(species = specie,category = category,subcategory = subcategory)
+  } else {
+    Signature <- msigdbr::msigdbr(species = specie,category = category,subcategory = subcategory) %>% 
+      dplyr::filter(gs_name == name) %>% 
+      dplyr::select(gene_symbol,gs_name)
+  }
+  
+  print(save(Signature,file = paste0(name,".RData"))) # Save geneset in the directory
+
+}
