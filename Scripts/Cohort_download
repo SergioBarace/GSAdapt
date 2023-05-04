@@ -1,0 +1,47 @@
+Cohort_dwn <- function(Database=Database,         # Name of the Database
+                       Dataset=Dataset,           # Name of the Dataset
+                       dir=list(NULL,dir)) {      # Directory path
+  
+  require(UCSCXenaTools)                     # Download TCGA gene expression
+  require(dplyr)                             # Data manipulation
+  require(tidyverse)                         # Pipe function
+  
+  if(is.null(dir) == T){
+    dir=getwd()       # Obtain the current directory OR
+  } else {
+    setwd(dir)        # Set Directory to save the dataset
+  }
+  
+  # Options for Database:
+  # - TCGA cohorts: tcgaHub
+  # - GDC cohorts: gdcHub
+  # - public cohorts: publicHub
+  # - ICGC cohorts: icgcHub
+  # - GTEX and Pan-cancer cohorts: toilHub
+  # - TCGA Pan-cancer: pancanAtlasHub
+  # - Treehouse Tumor Compendium: treehouseHub
+  # - PCAWG: pcawgHub
+  # - GDC ATACseq: atacseqHub
+  # - Single cell: singlecellHub
+  # - Pediatric cancers: kidsfirstHub
+  
+  # Using data(XenaData) it is possible to customize the desired cohort to download
+  
+  # Dataset: the name of the selected cohort to download (e.g. LIHC, LUAD ...)
+  
+  # Directory options: default (NULL)
+ 
+  # Generate a link to download files 
+  XenaGenerate(subset = XenaHostNames==Database) %>%
+    XenaFilter(filterDatasets = Dataset) -> to_browse
+  
+  # Download the list of files into R
+  XenaQuery(to_browse) %>%
+    XenaDownload() -> xe_download
+  
+  # Save the files in a list object
+  cli = XenaPrepare(xe_download)
+  
+  print(save(cli,file = paste0(Dataset,".RData"))) # Save data into your directory
+
+}
