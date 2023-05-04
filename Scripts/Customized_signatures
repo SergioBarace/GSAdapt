@@ -1,0 +1,11 @@
+.Customized_signatures <- function(path=path, file=file) {
+  
+  require(qusage)
+  
+  gmt_path<-paste0(path,file)
+  gmt_file<-qusage::read.gmt(file=gmt_path)
+  
+  gmt_file_df<-data.frame(gmt_file)
+  
+  gmt_file_df
+}
