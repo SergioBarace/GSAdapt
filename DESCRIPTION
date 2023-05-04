@@ -1,1 +1,16 @@
+Package: GSAdapt
 
+Version 0.99.0
+Title: Gene Set Adaptation for transcriptomic data
+Author@s: c(person("Sergio", "Barace", role= c("aut", "cre"), mail=sbarace@alumni.unav.es,
+            person("Josepmaria", "Argemí", role= c("aut"), mail=jargemi@unav.es))
+Depends: R (>=3.5.0)
+Imports: tidyverse, dplyr, msigdbr, qusage, UCSCXenaTools, igraph, graphics
+Suggests: ggplot2, tibble, tidyr, readr, purrr, stringr, forcats, lubridate, limma
+Description: GSAdapt is an exploratory package able to identify driver genes in a published or in-house gene sets. GSAdapt take into account the transcriptomic expression of each gene and generate a correlation matrix for creating graph models. These models help users to focus on those genes with more coexpression and favour their use in other Bioconductor analysis such as pathway enrichment analysis or survival analysis.
+License:
+VignetteBuilder:
+URL: https://github.com/SergioBarace/GSAdapt
+BugReports: https://github.com/SergioBarace/GSAdapt/issues
+Encoding:
+biocViews: AnnotationData, Microarray, RNAseq, Pathways 
