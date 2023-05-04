@@ -1,0 +1,101 @@
+.gsadapt<-function(Cohort=Cohort,                 # Gene expression matrix
+                  Signature=Signature,           # Two column-dataframe: 1st column gene names, 2nd column signature name
+                  CCIM=list(0,CCIM),             # Numeric value or numeric vector (from 0 to 1)
+                  NCEC=list(0,NCEC)){            # Numeric value or numeric vector (from 0 to 1). Recommended between 0 and 0.5
+  
+  require(igraph)                            # Network analysis and visualization
+  require(dplyr)                             # Data manipulation
+  
+  colnames(Signature)<-c("GeneID","Signature")
+  OGS<-unique(as.factor(Signature[,2]))
+  
+  genes1_mth1<-list()
+  pathway_name<-list()
+  
+  lapply(levels(OGS), function(i){
+    
+    print(i)
+    selected_genes<-Signature %>% dplyr::filter(Signature == i)
+    
+    subset<-na.omit(Cohort[selected_genes[,1],])
+    subset.t<-t(subset)
+    corr_table<-stats::cor(subset.t, method = "spearman")
+    corr_table[is.na(corr_table)]<-0
+    corr_table<-abs(corr_table)
+    
+    corr_table[corr_table<CCIM]<-0
+    genes_input<-rownames(corr_table)
+    
+    if(sum(corr_table)>10){                                                                   
+      graphics::par(mar=c(0,0,0,0)+.1)                                                                    
+      g1<-graph_from_adjacency_matrix(corr_table,weighted = T,mode = "undirected",diag = F)  
+      V(g1)$color<-"salmon"                                                                     
+      V(g1)$shape<-"sphere"                                                                     
+      E(g1)$color<-"grey30"                                                                     
+      LO<-layout_with_fr(g1)                                                                      
+      plotg1<-plot(g1,vertex.label.cex=.6,vertex.size=15,layout=LO)                             
+      pdf(paste0(i,"_",CCIM,"_plotg1","_",Sys.Date(),"_",".pdf"), paper = "a4")  
+      plotg1                                                                                    
+      dev.off()                                                                                 
+      
+      # Adapted graph will plot every gene, however, some of them could be isolated
+      # and the interpretation of graph would be tricky. Those genes with any interaction
+      # are saved in a new object for filtering spurious genes. A second graph without
+      # those genes facilitates visualization and interpretation.
+      
+      gene_names_filtered <- names(which(igraph::degree(g1)>0))                                          
+      if (length(gene_names_filtered)>0){                                                       
+        if (length(gene_names_filtered)<=length(genes_input)){                                    
+          if(length(gene_names_filtered)>=7){                                                    
+            Isolated = which(igraph::degree(g1)==0)                                                     
+            g2 = igraph::delete.vertices(g1, Isolated)                                                  
+            LO2 = LO[-Isolated,]                                                                
+            plotg2 <- plot(g2, layout=LO2, vertex.label.cex=.6,vertex.size=10)                  
+            
+            pdf(paste0(i,"_",CCIM,"_plotg2","_",Sys.Date(),"_",".pdf"), paper = "a4")   
+            plotg2                                                                              
+            dev.off()   
+            
+            # For next cut-off, loops and multiples edges will be removed
+            
+            x<-exists("g2")                                                                           
+            if (x==FALSE) {                                                                           
+              net<-simplify(g1)                                                                       
+            } else {net<-simplify(g2)}                                                                
+            
+            # k value represents the eigenvalue of the centrality of each gene in the graph
+            
+            ec <- eigen_centrality(net,directed = F,weights = NULL)
+            genes_ec<-ec$vector[ec$vector>NCEC]
+            genes1_mth1[[length(genes1_mth1)+1]]<-names(genes_ec)
+            pathway_name[[length(pathway_name)+1]]<-paste0(i,"_",CCIM,"_",NCEC)
+            
+          } 
+        } 
+      } 
+    } 
+    
+    names(genes1_mth1)<-pathway_name
+    w<-split(genes1_mth1,names(genes1_mth1))
+    
+    genes<-c()
+    pathway1<-c()
+    
+    lapply(w, function(m){
+      list<-unlist(m)
+      genes<-c(genes,list)
+      pathway1<-c(pathway1,rep(names(m),length(list)))
+      DataMeta<-data.frame(genes,pathway1)
+      write.table(DataMeta, paste0("DataMeta","_",i,"_",CCIM,"_",NCEC,"_",Sys.Date(),".txt"),
+                  sep = "\t", col.names = NA)
+    })
+    
+    genes1_mth1<-list()
+    pathway_name<-list()
+    
+    if(tail(levels(OGS),n=1) == i){
+      stop("GSAdapt for required CCIM and NCEC is completed")
+    }
+  })
+  
+}
