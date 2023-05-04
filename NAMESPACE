@@ -1,1 +1,13 @@
+UseDynLib(GSAdapt)
 
+import(methods)
+
+importFrom(tidyverse, 
+           ggplot2, 
+           graphics)
+
+importMethodsFrom(msigdbr, 
+                  UCSCXenaTools,
+                  igraph,
+                  qusage)
+exportMethods()
