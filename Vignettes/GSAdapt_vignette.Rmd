@@ -1,0 +1,128 @@
+---
+title: "GSAdapt: Gene Set Adaptation"
+author: 
+  -name: "Sergio Barace"
+  -affiliation: Hepatology Department, CIMA, University of Navarre, Pamplona, Spain
+  -email: sbarace@alumni.unav.es
+  
+  -name: "Josepmaría Argemí"
+  -affiliations: Hepatology Department, CIMA, University of Navarre, Pamplona, Spain
+                 Liver Unit, CUN, University of Navarre, Pamplona, Spain
+                 Centro de Investigación Biomédica en Red de Enfermedades Hepáticas                  y Digestivas (CIBER-EHD), Madrid, Spain
+                 Division of Gastroenterology Hepatology and Nutrition, University                   of Pittsburgh, Pittsburgh, PA, USA
+  -email: jargemi@unav.es
+                  
+date: '2023-05-04'
+output: html_document
+---
+
+## Brief introduction
+
+Gene Set Adaptation (GSAdapt) is a computational annotation package that provides adapted signatures through querying a particular transcriptomic gene expression. GSAdapt uses graph models in order to display the coexpression of the genes of each gene set. Using customized thresholds, users will be able to interrogate their collected gene sets in their particular array expression. Besides, users are free to choice published signatures or could create their own signatures. In this vignette, it will be explained the uses of GSAdapt and their main outputs in order to facilitate the interpretation for downstream analysis.
+
+## Required fields
+
+GSAdapt requires two main files:
+
+1- Expression matrix. A dataframe containing as rownames gene symbol (HUGO nomenclature) and colnames with the name of the samples. 
+2- Gene set table. A dataframe with n rows and 2 columns. First column contains the gene names and the second column the name of the signature.
+
+```{r}
+head(Signature)
+```
+
+```{r}
+head(Matrix_expr)
+```
+
+In the package, it is possible to obtain these information using a developed functions. From function "Signature_gsea", the user import msigdbr function to obtain one o more signatures from public repository MSigDB.
+
+```{r}
+ 
+Signature<-Signature_gsea(option = "all", specie = "Homo sapiens", category = "H")
+
+head(Signature)
+
+```
+
+Signature_gsea provide the list of every signature that belongs to Hallmark category in MSigDB.
+
+If users are only interested in one particular signature, using the arguments "option","subcategory" and "name" they could select a particular signature.
+
+```{r}
+Signature<-Signature_gsea(option = NULL, specie = "Homo sapiens", category = "H",name = "HALLMARK_EPITHELIAL_MESENCHYMAL_TRANSITION")
+
+head(Signature)
+
+```
+
+Also, using the function "Cohort_dwn" transcriptomic files could be downloaded from Xenabrowser repository from University of California Santa Cruz.
+
+```{r}
+SKCM_list<-Cohort_dwn(Database = "tcgaHub", Dataset = "SKCM")
+```
+
+In this example, melanoma samples from TCGA database is downloaded in R. Using the command names() user could find information about transcriptomic, methylomic or clinical information about melanoma patients.
+
+```{r}
+names(SKCM_list)
+```
+
+Easily, matrix expression can be extracted from list object:
+
+```{r}
+Matrix_SKCM<-SKCM_list$HiSeqV2.gz
+
+head(Matrix_SKCM)
+```
+
+In this function, users can choose every dataset on Xenabrowser webpage. Here are the possible options for each argument:
+
+# Options for Database:
+
+-   TCGA cohorts: tcgaHub
+-   GDC cohorts: gdcHub
+-   public cohorts: publicHub
+-   ICGC cohorts: icgcHub
+-   GTEX and Pan-cancer cohorts: toilHub
+-   TCGA Pan-cancer: pancanAtlasHub
+-   Treehouse Tumor Compendium: treehouseHub
+-   PCAWG: pcawgHub
+-   GDC ATACseq: atacseqHub
+-   Single cell: singlecellHub
+-   Pediatric cancers: kidsfirstHub
+
+# Options for Dataset:
+
+Dataset: the name of the selected cohort to download (e.g. LIHC, LUAD ...)
+
+Do not forget that this function is based on USCSXenaTools package likewise previous one is built from msigdbr package. The aim of these functions is to facilitate users to download from public repositories signatures and transcriptomic files.
+
+## Signature adaptation using graph models
+
+Graphs are the spatial representation of a numeric matrix in 3D. Graphs are constituted by nodes and connections. Node is the name of each element to test, in this case, a gene. Connection is the relationship between two or more nodes. This connection is created by a numeric value. GSAdapt are based on igraph package, able to use matrixes with positive values. At this point, it is mandatory to warn that negative values are not feasible in GSAdapt because function gsadapt() is built under absolute correlations. Absolute correlations harmonize gsadapt() requirements and facilitate the use of this function.
+
+gsadapt() uses a expression matrix and dataframe with the name of each signatures and generate a submatrix isolating each signature. In the case the users have more than one signature, gsadapt() apply each element of the second column of the object signature and save the resultant graph and a list.
+
+As users can notice, gsadapt() presents two arguments called CCIM and NCEC. These arguments are required for specifying the correlation threshold and the centrality value.
+
+ - CCIM. Also named "Cut-off Correlation of Input Matrix". Represented the absolute correlation of the matrix to test. Users could assess CCIM=0 and explore how graphs display without correlation filter. It is required to use positive values between 0 to 1.
+ - NCEC. The "Node Centrality Eigenvalue Cut-off" refers to the importance of each gene in the graph. Computationally, igraph assigns a value between 0 to 1 to each node of the graph (also, isolated genes). Users can work with this argument to restrict those genes located in the boundary of the graph. NCEC is useful for focusing on a selected hub of genes that gives valuable information about signature in the cohort of study.
+ 
+Moreover, when gsadapt() is executed, graph outputs were saved in the set directory letting users to explore the graph structure of each graph. gsadapt() can save two plots for each signature. The first graph contains the spatial structure and isolated nodes (if exists). The second graph will be display if any node is removed from the main structure. This second output is more visual and clean favoring the interpretation.
+
+```{r}
+DataMeta<-gsadapt(Cohort = Matrix_SKCM, Signature = Signature, CCIM = 0.3, NCEC = 0.1)
+
+str(DataMeta)
+```
+In the list, each element corresponds to a dataframe with filtered genes. It is possible to work with all of them or one by one. 
+
+```{r}
+DataMeta_el1<-DataMeta[[1]]
+```
+In this example, the first dataframe is extracted from object DataMeta. With this information users could work in visualization using heatmap or functional analysis.
+
+```{r}
+sessionInfo()
+```
