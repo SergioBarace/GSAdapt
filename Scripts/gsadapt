@@ -43,18 +43,38 @@
       # are saved in a new object for filtering spurious genes. A second graph without
       # those genes facilitates visualization and interpretation.
       
-      gene_names_filtered <- names(which(igraph::degree(g1)>0))                                          
+      gene_names_filtered <- names(which(igraph::degree(g1)>0)) 
+      
+      # For next cut-off, loops and multiples edges will be removed
+      
+                                                                                 
+      net<-simplify(g1)                                                                       
+                                                                     
+      
+      # k value represents the eigenvalue of the centrality of each gene in the graph
+      
+      ec <- eigen_centrality(net,directed = F,weights = NULL)
+      genes_ec<-ec$vector[ec$vector>NCEC]
+      genes_list[[length(genes_list)+1]]<-names(genes_ec)
+      pathway_list[[length(pathway_list)+1]]<-paste0(i,"_",CCIM,"_",NCEC)
+      
+
       if (length(gene_names_filtered)>0){                                                       
         if (length(gene_names_filtered)<=length(genes_input)){                                    
           if(length(gene_names_filtered)>=7){                                                    
+            
             Isolated = which(igraph::degree(g1)==0)                                                     
             g2 = igraph::delete.vertices(g1, Isolated)                                                  
             LO2 = LO[-Isolated,]                                                                
-            plotg2 <- plot(g2, layout=LO2, vertex.label.cex=.6,vertex.size=10)                  
             
-            pdf(paste0(i,"_",CCIM,"_plotg2","_",Sys.Date(),"_",".pdf"), paper = "a4")   
-            plotg2                                                                              
-            dev.off()   
+            if(length(LO2)>0){
+              plotg2 <- plot(g2, layout=LO2, vertex.label.cex=.6,vertex.size=10)                  
+              
+              pdf(paste0(i,"_",CCIM,"_plotg2","_",Sys.Date(),"_",".pdf"), paper = "a4")   
+              plotg2                                                                              
+              dev.off()
+            }
+               
             
             # For next cut-off, loops and multiples edges will be removed
             
@@ -73,29 +93,25 @@
           } 
         } 
       } 
+      
+      names(genes1_mth1)<-pathway_name
+      w<-split(genes1_mth1,names(genes1_mth1))
+      
+      genes<-c()
+      pathway1<-c()
+      
+      tpm<-lapply(w, function(m){
+        list<-unlist(m)
+        genes<-c(genes,list)
+        pathway1<-c(pathway1,rep(names(m),length(list)))
+        tpm<-list(genes=genes,signature=pathway1)
+      })
+      
+      DataMeta<-data.frame(tpm)
+      colnames(DataMeta)<-c("GeneID","Signature")
+      return(DataMeta)
+      
     } 
     
-    names(genes1_mth1)<-pathway_name
-    w<-split(genes1_mth1,names(genes1_mth1))
-    
-    genes<-c()
-    pathway1<-c()
-    
-    lapply(w, function(m){
-      list<-unlist(m)
-      genes<-c(genes,list)
-      pathway1<-c(pathway1,rep(names(m),length(list)))
-      DataMeta<-data.frame(genes,pathway1)
-      write.table(DataMeta, paste0("DataMeta","_",i,"_",CCIM,"_",NCEC,"_",Sys.Date(),".txt"),
-                  sep = "\t", col.names = NA)
-    })
-    
-    genes1_mth1<-list()
-    pathway_name<-list()
-    
-    if(tail(levels(OGS),n=1) == i){
-      stop("GSAdapt for required CCIM and NCEC is completed")
-    }
   })
-  
 }
