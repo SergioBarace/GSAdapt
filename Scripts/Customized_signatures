@@ -1,11 +1,17 @@
-.Customized_signatures <- function(path=path, file=file) {
+grp_import <- function(path=path) {
   
-  require(qusage)
+  files<-list.files(path = path,pattern = ".grp")
   
-  gmt_path<-paste0(path,file)
-  gmt_file<-qusage::read.gmt(file=gmt_path)
+  columns = c("Gene","Signature") 
+  tmp = data.frame(matrix(nrow = 1, ncol = length(columns))) 
+  colnames(tmp) = columns
   
-  gmt_file_df<-data.frame(gmt_file)
-  
-  gmt_file_df
+  for (i in files) {
+    
+    x<-read.table(paste0(path,i))
+    x2<-x[-1,]
+    Signature<-data.frame(Gene=x2,Signature=rep(x[1,],n=length(x2)))
+    tmp<-na.omit(rbind(tmp,Signature))
+    
+  }
 }
