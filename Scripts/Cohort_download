@@ -1,16 +1,10 @@
 Cohort_dwn <- function(Database=Database,         # Name of the Database
-                       Dataset=Dataset,           # Name of the Dataset
-                       dir=list(NULL,dir)) {      # Directory path
+                       Dataset=Dataset) {         # Name of the Dataset     
   
   require(UCSCXenaTools)                     # Download TCGA gene expression
   require(dplyr)                             # Data manipulation
   require(tidyverse)                         # Pipe function
   
-  if(is.null(dir) == T){
-    dir=getwd()       # Obtain the current directory OR
-  } else {
-    setwd(dir)        # Set Directory to save the dataset
-  }
   
   # Options for Database:
   # - TCGA cohorts: tcgaHub
@@ -42,6 +36,5 @@ Cohort_dwn <- function(Database=Database,         # Name of the Database
   # Save the files in a list object
   cli = XenaPrepare(xe_download)
   
-  print(save(cli,file = paste0(Dataset,".RData"))) # Save data into your directory
-
+  return(cli)
 }
