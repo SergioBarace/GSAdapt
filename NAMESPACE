@@ -14,4 +14,3 @@ importFrom(igraph,graph_from_adjacency_matrix)
 importFrom(igraph,simplify)
 importFrom(stats,cor)
 importFrom(stats,na.omit)
-
