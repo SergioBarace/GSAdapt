@@ -1,0 +1,83 @@
+---
+title: "GSAdapt"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{my-vignette}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## 1. Brief introduction
+
+GSAdapt, also called Gene Set Adaptation, is a package for adapting published or in-house gene sets in a concrete transcriptomic data. GSAdapt takes as input a SummarizedExperiment and a dataframe with information of features and their respective gene set name.
+
+Package GSAdapt can be load in RStudio using library command:
+
+```{r setup}
+library(GSAdapt)
+```
+
+GSAdapt filters features in matrix expression rownames and generate a correlation matrix for graph building. Depending on users expectations, GSAdapt would be more permissive or more restrictive with graph features. Moreover, users could save in their default directory the graph structure so as to collect more information about graph visualization methods.
+
+## gsadapt function
+
+gsadapt is the main function of GSAdapt package. Users need two main arguments:
+
+1- A SummarizedExperiment object. This object can be create from function experiment_to_se from scratch. No specific information about genomic ranges is required.
+
+2- Dataframe with features information. It is a two-column table where the first argument is the gene_symbol and the second column the name of the gene set to test.
+
+With these two arguments, gsadapt generate a igraph object and save information about adapted genes and graph properties. However, users must specify three more arguments:
+
+a)  mggcc. Median gene to gene correlation cut-off. Must be a number between 0 to 1 indicating at which value gene to gene correlation should be canceled. These requirement indicates which genes and connections should be built in graph.
+
+b)  ncec. Node centrality eigenvalue cut-off. Number between 0 to 1. 0 represented genes out of connections, whereas 1 indicates the best connected and centered gene. By default, 1 is granted to that gene with the highest number of neighbors and connections. Those between 0 to 1 could be regulated with this cut-off.
+
+c)  plot_graph. Logical argument indicating whether graph should be plotted and saved in directory. Plot_graph = T creates three graphs. The first one plot every gene even if they do not have any connections. The second one remove those isolated genes and give information about graph structure. The last graph takes ncec value for filter those genes isolated and with low association with graph structure.
+
+## Examples for using GSAdapt
+
+Basic gsadapt examples takes as input airway SummarizedExperiment and creates two gene sets.
+
+```{r}
+### Two or more signatures (permissive filter)
+library(SummarizedExperiment)
+library(airway)
+ 
+data(airway, package="airway")
+ 
+Signature <- data.frame(Gene_ID = head(rownames(assay(airway)), n=20), 
+Gene_Set = c(rep("GS1",10),rep("GS2",10))) 
+ 
+DataMeta <- gsadapt(se = airway, 
+                    gs_df=Signature,
+                    mggcc=0.2,
+                    ncec=0.1,
+                    plot_graph=FALSE)
+ 
+### Two or more signatures (restrictive filter)
+ 
+data(airway, package="airway")
+ 
+Signature <- data.frame(Gene_ID = head(rownames(assay(airway)), n=20), 
+Gene_Set = c(rep("GS1",10),rep("GS2",10))) 
+ 
+DataMeta <- gsadapt(se = airway, 
+                    gs_df=Signature,
+                    mggcc=0.6,
+                    ncec=0.3,
+                    plot_graph=FALSE)
+```
+
+## Other GSAdapt functions
+
+experiment_to_se function. This function provides a SummarizedExperiment from an expression matrix and metadata with information about samples.
+
+Signature_input_to_GSAdapt. With this function, users could change their gene sets are get them ready to gsadapt format.
