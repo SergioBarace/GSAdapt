@@ -4,8 +4,11 @@ Title: Gene Set Adaptation
 Version: 0.1.0
 Author: Authors@R": c(person("Sergio", "Barace",role = c("aut", "cre"),
                               email = "sbarace@alumni.unav.es",
-                              comment = c(ORCID = "0000-0003-2566-8819"))
-Maintainer: Sergio Barace <sbarace@alumni.unav.es>
+                              comment = c(ORCID = "0000-0003-2566-8819"),
+                      person("Josepmaria", "Argemi",role = c("aut", "cre"),
+                              email = "jargemi@unav.es",
+                              comment = c(ORCID = "0000-0003-1696-7753"))
+Maintainer: Josepmaria Argemi <jargemi@unav.es>
 Description: GSAdapt is a method for obtaining a biological specific set of genes with relevance in transcriptomic expression. It is required a transcriptomic data and gene set collection. GSAdapt removes spurious correlated genes from each gene set based on user specifications. The obtained outcome could be used for exploratory analysis such as heatmaps, survival analyses or hierarchical clustering.
 License: MIT + file LICENSE
 Encoding: UTF-8
