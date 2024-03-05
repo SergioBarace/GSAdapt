@@ -16,10 +16,6 @@ knitr::opts_chunk$set(
 
 ## 1. Brief introduction
 
-Certainly! Here's the corrected and improved version of your text:
-
----
-
 GSAdapt, also known as Gene Set Adaptation, is a package designed for adapting gene sets, either published or created in-house, to analyze specific transcriptomic datasets. This functionality is particularly valuable when a gene set originates from a biological context different from the dataset under analysis. GSAdapt takes a SummarizedExperiment object and a dataframe containing feature information and their respective gene set names as input.
 
 To load the GSAdapt package in RStudio, you can use the following command:
