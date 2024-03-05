@@ -12,10 +12,10 @@ Absolute_correlation_matrix(input_se = input_se, list_gs = list_gs)
 \item{list_gs}{A list of gene set collection}
 }
 \value{
-A list of matrixes
+A list of matrices
 }
 \description{
-Generation of absolute correlation matrixes
+Generation of absolute correlation matrices
 }
 \examples{
 
