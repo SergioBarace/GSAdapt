@@ -9,7 +9,7 @@ Author: Authors@R": c(person("Sergio", "Barace",role = c("aut", "cre"),
                               email = "jargemi@unav.es",
                               comment = c(ORCID = "0000-0003-1696-7753"))
 Maintainer: Josepmaria Argemi <jargemi@unav.es>
-Description: GSAdapt is a method designed to derive a biologically specific set of genes relevant to transcriptomic expression. It requires both transcriptomic data and a collection of gene sets. GSAdapt filters out spurious correlated genes from each gene set according to user-defined specifications. The resulting outcome can be utilized for various exploratory analyses, including heatmaps, survival analyses, or hierarchical clustering.
+Description: GSAdapt is a method designed to derive a biologically meaningful signature from a highly dispersed, publicly available gene set. It requires both a transcriptomic dataset and a collection of gene sets. Using graph methods, GSAdapt will filter out spurious coexpressed genes from each gene set according to user-defined specifications. The resulting adapted gene set can be utilized in various exploratory analyses, including heatmaps, survival analyses, or hierarchical clustering for interrogating that biological context.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
