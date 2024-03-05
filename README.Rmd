@@ -18,4 +18,4 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 <!-- badges: end -->
 
-GSAdapt is a method designed to derive a biologically specific set of genes relevant to transcriptomic expression. It requires both transcriptomic data and a collection of gene sets. GSAdapt filters out spurious correlated genes from each gene set according to user-defined specifications. The resulting outcome can be utilized to obtain meaningful functional enrichments and for various downstream exploratory analyses, including heatmaps, hierarchical clustering, survival analyses, etc.
+GSAdapt is a method designed to derive a biologically meaningful signature from a highly dispersed, publicly available gene set. It requires both a transcriptomic dataset and a collection of gene sets. Using graph methods, GSAdapt will filter out spurious coexpressed genes from each gene set according to user-defined specifications. The resulting adapted gene set can be utilized in various exploratory analyses, including heatmaps, survival analyses, or hierarchical clustering for interrogating that biological context.
