@@ -19,37 +19,3 @@ knitr::opts_chunk$set(
 <!-- badges: end -->
 
 GSAdapt is a method designed to derive a biologically specific set of genes relevant to transcriptomic expression. It requires both transcriptomic data and a collection of gene sets. GSAdapt filters out spurious correlated genes from each gene set according to user-defined specifications. The resulting outcome can be utilized to obtain meaningful functional enrichments and for various downstream exploratory analyses, including heatmaps, hierarchical clustering, survival analyses, etc.
-
-
-## Installation
-
-You can install the development version of GSAdapt like so:
-
-``` r
-# FILL THIS IN! HOW CAN PEOPLE INSTALL YOUR DEV PACKAGE?
-```
-
-## Example
-
-This is a basic example which shows you how to solve a common problem:
-
-```{r example}
-library(GSAdapt)
-## basic example code
-```
-
-What is special about using `README.Rmd` instead of just `README.md`? You can include R chunks like so:
-
-```{r cars}
-summary(cars)
-```
-
-You'll still need to render `README.Rmd` regularly, to keep `README.md` up-to-date. `devtools::build_readme()` is handy for this.
-
-You can also embed plots, for example:
-
-```{r pressure, echo = FALSE}
-plot(pressure)
-```
-
-In that case, don't forget to commit and push the resulting figure files, so they display on GitHub and CRAN.
