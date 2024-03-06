@@ -77,7 +77,9 @@ DataMeta <- gsadapt(se = airway,
 
 ## Other GSAdapt Functions
 
-1. `experiment_to_se`: This function generates a SummarizedExperiment object from an expression matrix and metadata containing sample information.
+1. 'experiment_to_se': This function generates a SummarizedExperiment object from an expression matrix and metadata containing sample information.
 
-2. `Signature_input_to_GSAdapt`: This function allows users to format their gene sets for use with `gsadapt`.
+2. 'Signature_input_to_GSAdapt': This function allows users to format their gene sets for use with `gsadapt`.
+
+3. 'test_rank_ags'. As an imperative request to test if adapted gene sets maintain their biological functions, hypergeometric algorithm is executed to assess rank position. This function requires gsadapt output and generates a list with each signature ranked based on hypergeometric test.
 
