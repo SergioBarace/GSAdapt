@@ -17,6 +17,7 @@
 #' @importFrom igraph graph_from_adjacency_matrix layout_with_fr degree simplify eigen_centrality delete.vertices
 #' @importFrom grDevices pdf dev.off
 #' @importFrom graphics par
+#' @import airway
 #' 
 #' @aliases gsadapt 
 #'
