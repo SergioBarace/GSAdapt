@@ -22,7 +22,7 @@ GSAdapt is an easy-to-use tool designed to adapt public gene set collections. Wi
 You can install the development version of GSAdapt like so:
 
 ``` r
-devtools::install_github("sbarace/GSAdapt")
+devtools::install_github("SergioBarace/GSAdapt")
 ```
 
 
