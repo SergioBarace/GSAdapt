@@ -1,0 +1,29 @@
+##### CHECKING PACKAGES AND DEPENDENCIES
+
+packages_to_check <- c('igraph', 'dplyr', 'tidyverse', 'grDevices', 'magrittr')
+bioc_packages_to_check <- c('msigdbr', 'clusterProfiler')
+check_install_package <- function(pkg_name) {
+  if (!requireNamespace(pkg_name, quietly = TRUE)) {
+    install.packages(pkg_name, dependencies = TRUE)
+    library(pkg_name, character.only = TRUE)
+  }
+  else {
+    library(pkg_name, character.only = TRUE)
+  }
+}
+check_install_bioc_package <- function(pkg_name) {
+  if (!requireNamespace(pkg_name, quietly = TRUE)) {
+    BiocManager::install(pkg_name, update = FALSE)
+    library(pkg_name, character.only = TRUE)
+  }
+  else {
+    library(pkg_name, character.only = TRUE)
+  }
+}
+lapply(c(packages_to_check, bioc_packages_to_check), function(pkg) {
+  if (pkg %in% bioc_packages_to_check) {
+    check_install_bioc_package(pkg)
+  } else {
+    check_install_package(pkg)
+  }
+})
