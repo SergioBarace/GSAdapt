@@ -1,0 +1,11 @@
+##### GSAD_UNIVERSE ####
+gsad_make_universe <- function (specie = "Homo sapiens", 
+                                msigdbcollections = c("H", "C2"),
+                                nonmsigdb_genesets = MetAtlas) {
+    MSigDB <- lapply(msigdbcollections, function(category) {
+      msigdbr::msigdbr(species = specie, category = category) %>%
+        dplyr::select(gs_name, gene_symbol)})
+  MSigDB.all <- bind_rows(MSigDB)
+  All.Sig <- bind_rows(MSigDB.all,nonmsigdb_genesets)
+  return(All.Sig)
+}
