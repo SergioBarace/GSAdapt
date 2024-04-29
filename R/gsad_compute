@@ -1,0 +1,159 @@
+##### GSAD_COMPUTE ####
+### gsad_compute returns the graph metrics of each gene set in 'gene_sets' in relation to a gene expression matrix 'data'
+gsad_compute <- function(data = data, 
+                         gene_sets = gene_sets,
+                         CCIM = 0.4, 
+                         RES = 1, 
+                         k_coeff.l = 0.2,
+                         label_analysis = 'computed_',
+                         dir.output = "/User_path/output/") {
+  
+  ##### Check and install required packages ####
+  packages_to_check <- c('igraph', 'dplyr', 'tidyverse', 'grDevices', 'magrittr','plyr')
+  bioc_packages_to_check <- c('msigdbr', 'clusterProfiler')
+  check_install_package <- function(pkg_name) {
+    if (!requireNamespace(pkg_name, quietly = TRUE)) {
+      install.packages(pkg_name, dependencies = TRUE)
+      library(pkg_name, character.only = TRUE)
+    }
+  }
+  check_install_bioc_package <- function(pkg_name) {
+    if (!requireNamespace(pkg_name, quietly = TRUE)) {
+      BiocManager::install(pkg_name, update = FALSE)
+      library(pkg_name, character.only = TRUE)
+    }
+  }
+  lapply(c(packages_to_check, bioc_packages_to_check), function(pkg) {
+    if (pkg %in% bioc_packages_to_check) {
+      check_install_bioc_package(pkg)
+    } else {
+      check_install_package(pkg)
+    }
+  })
+  ##### packages checked ####
+  
+  
+  # Make title for the outputs
+  title_out <- paste0(label_analysis,'_',format(Sys.Date(),"%Y%m%d"))
+  
+  # Preprocess gene sets data
+  colnames(gene_sets) <- c("gs_name", "gene_symbol")
+  gene_sets$gs_name <- as.factor(gene_sets$gs_name)
+  pathway <- unique(gene_sets$gs_name)
+  
+  final_list <- list()
+  prefinal.list <- list()
+  
+  exclude_genes <- function(cor_matrix, threshold) {
+    diag(cor_matrix) <- 0
+    no_corr_genes <- rowSums(cor_matrix >= threshold) <2
+    cor_matrix[no_corr_genes, ] <- 0
+    cor_matrix[, no_corr_genes] <- 0
+    cor_matrix[cor_matrix < 0] <- 0
+    genes0 <- which(rowSums(cor_matrix == 0) == ncol(cor_matrix))
+    cor_matrix <- cor_matrix[-genes0,-genes0]
+    return(cor_matrix)
+  }
+  
+  
+  for (i in pathway) {
+    pathway <- gene_sets %>% dplyr::filter(gs_name == i)
+    selected_genes <- na.omit(data[unique(pathway$gene_symbol), ])
+    selected_genes2 <- t(selected_genes)
+    correlations <- stats::cor(selected_genes2, method = "spearman")
+    correlations[is.na(correlations)] <- 0
+    genes_input <- rownames(correlations)
+    
+    
+    for (ccim in CCIM) {
+      correlations3 <- exclude_genes(correlations, ccim)
+      for (res in RES) {
+        print(paste0("CCIM > ",ccim," RES > ",res,"--->> computing metrics for ", i))
+        list <- list()
+        
+        #original metrics
+        thresholds_res_ccim <- c(paste0(res,"_",ccim))
+        thresholds_ccim_res <- c(paste0(ccim,"_",res))
+        original_gene_id <- paste(pathway$gene_symbol, collapse = ",")
+        original_n_genes <- c(nrow(pathway))
+        original_mmgc <- c(median(na.omit(as.vector(correlations))))
+        original_mggv <- c(mean(var(na.omit(as.vector(correlations)))))
+        
+        #graph
+        net <- igraph::graph_from_adjacency_matrix(correlations3, weighted = TRUE, mode = "undirected", diag = FALSE) 
+        ec <- igraph::eigen_centrality(net, directed = FALSE, weights = NULL)
+        #central_gene <- names(which.max(ec$vector))
+        louvain_communities <- igraph::cluster_louvain(net, resolution = res)
+        louvain_size <- igraph::sizes(louvain_communities)
+        membership <- igraph::membership(louvain_communities)
+        
+        #metrics and genes for each cluster
+        for (j in 1: length(louvain_communities)) {
+          print(paste0("computing graph metrics for community ", j))
+          genes_commun <- names(membership[which(membership==j)])
+          n_genes_commun <- length(genes_commun)
+          ec_commun <- ec$vector[genes_commun]
+          ec_max <- max(ec_commun)
+          sorted_ec_commun <- sort(ec_commun, decreasing = TRUE)
+          central_gene <- names(sorted_ec_commun)[1]
+          core_genes_top3 <- names(sorted_ec_commun)[1:3]
+          core_genes_09 <- names(sorted_ec_commun[which(sorted_ec_commun>sorted_ec_commun[1]*0.9)])
+          all.genes.lab <- paste(genes_commun, collapse = ",")
+          core_genes.lab <- paste(core_genes_top3, collapse = ",")
+          core_genes_09.lab <- paste(core_genes_09, collapse = ",")
+          c_gene.lab <- paste(central_gene, collapse = ",")
+          central_gs_name.lab <- paste0(c_gene.lab,"_",i)
+          
+          correlations4 <- 0
+          
+          if (length(ec_commun) > 2)  {
+            correlations4 <- correlations[genes_commun,genes_commun]
+            diag(correlations4) <- NA
+            correlations4[lower.tri(correlations4)] <- NA
+            correlation_values <- na.omit(as.vector(correlations4))
+            mggc <- c(median(correlation_values))
+            mggv <- c(mean(var(correlation_values)))
+            n_genes <- length(genes_commun)
+            k_coeff <- c(length(genes_commun)/nrow(pathway))
+          } else { 
+            correlation_values <-NA
+            mggc <- NA
+            mggv <- NA
+            n_genes <- NA
+            k_coeff <- NA
+          }
+        
+          # Store results in a data frame
+          list[[length(list)+1]] <- list(
+            c_gs_name = central_gs_name.lab,
+            gs_name = i, 
+            o_gene_ids = original_gene_id, 
+            o_n = original_n_genes, 
+            o_mggc = original_mmgc, 
+            o_mggv = original_mggv,
+            res_ccim = thresholds_res_ccim,
+            ccim_res = thresholds_ccim_res,
+            gene_id = all.genes.lab, 
+            core_genes = core_genes.lab,
+            core_genes_09 = core_genes_09.lab,
+            central = c_gene.lab,
+            n = n_genes, 
+            mggc = mggc, 
+            mggv = mggv,
+            k_coeff = k_coeff
+                            )
+        }
+        final_list <- c(final_list,list)
+      }
+    }
+  }
+  computed_gs <- na.omit(do.call(rbind, lapply(final_list, data.frame)))
+  computed_gs <- computed_gs %>% dplyr::filter(k_coeff>k_coeff.l)
+  computed_gs <- plyr::arrange(computed_gs, gs_name, res_ccim)
+  write.csv2(computed_gs,paste0(dir.output,title_out,'.csv'))
+  return(computed_gs)
+}
+  computed_gs <- plyr::arrange(computed_gs, gs_name, res_ccim)
+  write.csv2(computed_gs,paste0(dir.output,title_out,'.csv'))
+  return(computed_gs)
+}
