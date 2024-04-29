@@ -1,0 +1,59 @@
+##### GSAD_SELECT 
+gsad_select <- function(computed_gs = data1, 
+                        computed_enriched_gs =data2,
+                        label_analysis = 'computed_enriched_title',
+                        min_total = 10,
+                        min_central = 1,
+                        dir.output = "/User_path/output/"){
+  title_out <- paste0(label_analysis,'_',format(Sys.Date(),"%Y%m%d"))
+  enriched <- computed_enriched_gs
+  enriched$gs_name_gsea_rk1 <- enriched$ID
+  enriched2 <- enriched %>% select(c_gs_name,gs_name_gsea_rk1,rank1_yes,GeneRatio,BgRatio,pvalue,p.adjust,qvalue)
+  computed_enriched <- dplyr::right_join(computed_gs, enriched2, by = 'c_gs_name')
+  computed_enriched$central_name <- paste0(computed_enriched$central,'_signature')
+  computed_enriched %>% select(central_name,c_gs_name,gs_name,o_gene_ids,o_n,o_mggc,o_mggv,gene_id, res_ccim, 
+                               core_genes_09,
+                               central,n,k_coeff,gs_name_gsea_rk1,rank1_yes,GeneRatio,BgRatio,pvalue,
+                               p.adjust,qvalue)
+  selected <- computed_enriched %>% filter(rank1_yes==TRUE)
+  
+  selected.variables <- selected %>% dplyr::select(central_name,gs_name,gene_id,core_genes_09,central)
+
+
+    merge_by_central <- function(i, data) {
+    data <- selected.variables %>% filter(central_name == i)
+    central_name <- unique(data$central_name)
+    
+    gene_ids <- unique(unlist(strsplit(data$gene_id, ',')))
+    core09_gene_ids <- unique(unlist(strsplit(data$core_genes_09, ',')))
+    
+    if (length(gene_ids)<min_total) { # here we set a minimum of genes for a signature
+      central_name <- NA
+    } else{
+      if (length(core09_gene_ids)<min_central) { # here we set a minimum of central genes for a signature
+        central_name <- NA
+      } else{
+      } 
+    }
+    
+    central_gene_id <- unique(data$central)
+    original_gs <- unique(data$gs_name)
+    return(data.frame(central_name = central_name,
+                              gene_ids = paste(gene_ids, collapse = ",") ,
+                              core09_gene_ids = paste(core09_gene_ids,collapse = ","),
+                              central_gene_id = central_gene_id,
+                      original_gs = paste(original_gs, collapse = ",")
+                              ))
+  }
+  
+  merged <- lapply(unique(selected.variables$central_name),merge_by_central, data = selected.variables)
+  merged2 <- do.call(rbind, merged)
+  merged3 <- na.omit(merged2)
+  
+  unselected <- computed_enriched %>% filter(rank1_yes==FALSE)
+  write.csv2(selected,paste0(dir.output,'selected_',title_out,'.csv'))
+  write.csv2(merged3,paste0(dir.output,'merged_',title_out,'.csv'))
+  write.csv2(unselected,paste0(dir.output,'unselected_',title_out,'.csv'))
+  
+  return(list(selected = selected,unselected = unselected,merged = merged3))
+}
