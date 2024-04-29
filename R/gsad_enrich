@@ -1,0 +1,50 @@
+##### GSAD_ENRICH ####
+### gsad_enrich returns the enrichment metrics of each gene set in a gsad_computed gene set in relation to the universe of gene sets in msigdb and other custom gene sets
+gsad_enrich <- function(computed_gs = data, 
+                        gs_universe = gs_universe,
+                        label_analysis = 'computed_enriched_',
+                        dir.output = "/User_path/output/"){
+  
+  title_out <- paste0(label_analysis,'_',format(Sys.Date(),"%Y%m%d"))
+  packages_to_check <- c('igraph', 'plyr','dplyr', 'tidyverse', 'grDevices', 'magrittr')
+  bioc_packages_to_check <- c('msigdbr', 'clusterProfiler')
+  check_install_package <- function(pkg_name) {
+    if (!requireNamespace(pkg_name, quietly = TRUE)) {
+      install.packages(pkg_name, dependencies = TRUE)
+    }
+    library(pkg_name, character.only = TRUE)
+  }
+  check_install_bioc_package <- function(pkg_name) {
+    if (!requireNamespace(pkg_name, quietly = TRUE)) {
+      BiocManager::install(pkg_name, update = FALSE)
+    }
+    library(pkg_name, character.only = TRUE)
+  }
+  
+  lapply(c(packages_to_check, bioc_packages_to_check), function(pkg) {
+    if (pkg %in% bioc_packages_to_check) {
+      check_install_bioc_package(pkg)
+    } else {
+      check_install_package(pkg)
+    }
+  })
+  
+  compute_enrichment <- function(i) {
+  print(paste("Processing row", i, "of", nrow(computed_gs)))
+  
+  # Compute enrichment for the current row
+  summary_test <- clusterProfiler::enricher(gene = unlist(strsplit(computed_gs$gene_id[i], ',')), TERM2GENE = gs_universe, minGSSize = 5)
+  gs_name <- computed_gs$gs_name[i]
+  c_gs_name  <- computed_gs$c_gs_name[i]
+  rank_gsea <- summary_test@result[1,]     
+  rank_gsea$logpadjdiff <- log(summary_test@result[1,6])/log(summary_test@result[2,6])
+  rank_gsea$rank1_yes <- paste(computed_gs$gs_name[i]==rank_gsea$ID[1])
+  gs_w_rank <- cbind(c_gs_name,gs_name,rank_gsea)
+  return(gs_w_rank)
+}
+
+result_list <- lapply(1:nrow(computed_gs), compute_enrichment)
+result_df <- do.call(rbind, result_list)
+write.csv2(result_df,paste0(dir.output,title_out,'.csv'))
+return(result_df)
+}
